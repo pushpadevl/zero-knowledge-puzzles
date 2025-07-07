@@ -7,7 +7,10 @@ pragma circom 2.1.4;
 
 template Add() {
    // Your code here 
-   
+   signal input in1;
+   signal input in2;
+   signal output out;
+   out <== (in1 + in2)*1;
 }
 
 component main  = Add();

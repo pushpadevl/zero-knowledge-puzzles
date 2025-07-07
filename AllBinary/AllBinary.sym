@@ -1,0 +1,13 @@
+1,1,1,main.out
+2,2,1,main.in[0]
+3,3,1,main.in[1]
+4,4,1,main.in[2]
+5,5,1,main.in[3]
+6,6,0,main.bins[0].out
+7,-1,0,main.bins[0].bit
+8,7,0,main.bins[1].out
+9,-1,0,main.bins[1].bit
+10,8,0,main.bins[2].out
+11,-1,0,main.bins[2].bit
+12,-1,0,main.bins[3].out
+13,-1,0,main.bins[3].bit
