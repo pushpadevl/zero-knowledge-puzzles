@@ -1,0 +1,42 @@
+1. Assigning a value to an input signal inside the same template where it has been defined also generates the error "Exception caused by invalid assignment" as can be seen in the next example.
+
+	pragma circom 2.0.0;
+
+	template wrong (N) {
+	 signal input a;
+	 signal output b;
+	 a <== N;
+	}
+
+	component main = wrong(1);
+
+3. Main component here {public [signal_list]} is optional. Any input signal of the template that is not included in the list is considered private.
+
+4. `x < y` is defined as val(x % p) < val(y % p)
+
+5. A field element is a value in the domain of Z/pZ, where p is the prime number set by default to
+
+		p = 21888242871839275222246405745257275088548364400416034343698204186575808495617.
+
+		As such, field elements are operated in arithmetic modulo p.
+
+	The circom language is parametric to this number, and it can be changed without affecting the rest of the language (using GLOBAL_FIELD_P).
+
+
+6. What if there are no multiplications?
+
+	What if we want to encode the following circuit?
+
+	out = x + y
+
+	This is pretty useless in practice, but for the sake of completeness, there can be solved with a dummy multiplication by one.
+
+	out = (x + y)*1
+
+	With our typical witness vector layout of [1, out, x, y], we have the following matrices:
+
+	A = [0 0 1 1]
+	B = [1 0 0 0]
+	C = [0 1 0 0]
+
+	Circom will not allow you to write circuits with no multiplications in them, but other zero knowledge programming languages will silently add a constraint like the one above to enable a transformation. 

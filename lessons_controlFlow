@@ -1,0 +1,84 @@
+0.  Important: when constraints are generated in any block inside an if-then-else or loop statement, the condition cannot be unknown (see Unknowns). This is because the constraint generation must be unique and cannot depend on unknown input signals.
+1.  pragma circom 2.0.0;
+
+        template A(n1, n2){ // known
+        signal input in1; // unknown
+        signal input in2; // unknown
+        var x = 0; // known
+        var y = n1; // known
+        var z = in1; // unknown
+        }
+
+2.  An array must also be defined with a known size.
+
+    pragma circom 2.0.0;
+
+    template A(){
+       signal input in;
+       var array[in];
+       // Error: The length of every array must known during the constraint generation phase
+    }
+
+3. template A(){
+    signal input in;
+    signal output out;
+
+    if (in < 0){
+        // Error: There are constraints depending on the value of the condition and it can be unknown during the constraint generation phase
+        out <== 0;
+    }
+}
+
+4. signal input in;
+   signal output out;
+
+   for (var i = 0; i < in; i++){
+       // Error: There are constraints depending on the value of the condition and it can be unknown during the constraint generation phase
+       out <== i;
+   }
+
+5. In case the expression in the condition is unknown and some constraint is generated, the compiler will generate the next error message: "There are constraints depending on the value of the condition and it can be unknown during the constraint generation phase".
+
+
+    template A(){}
+    template wrong(N1){
+        signal input in;
+        component c;
+        if(in > N1){
+        c = A();
+        }
+    }
+    Let us also notice that if the body of the statement does not involve any signal or component; or a constraint does not depend on a value involved with unknown values, then the compilation will succeed as it can be seen in the next example.
+
+template right(N){
+    signal input in;
+    var x = 2;
+    var t = 5;
+    if(in > N){
+      t = 2;
+    }
+}
+6,  This template is correct, since no constraint depends on the unknown value of in.
+
+template right(N1,N2){
+    signal input in;
+    var x = 2;
+    var t = 5;
+    if(N1 > N2){
+      t = 2;
+    }
+    x === t;
+}
+7.  The following template is correct, since no constraint depends on the unknown value of in.Important: Another compilation error is generated when the content of a var depends on some unknown condition: that is when the var takes its value inside an if-then-else or loop statement with an unknown condition. Then, the content of the variable is a non-quadratic expression and, as such, cannot be used in the generation of a constraint.
+
+template wrong(){
+    signal input in;
+    var x; 
+    var t = 5;
+    if(in > 3){
+      t = 2;
+    }
+    x === t;
+}
+
+This template produces a compilation error, since the value of variable t involved in the last constraint depends on the unknown value of variable in.
