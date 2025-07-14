@@ -1,0 +1,73 @@
+Great question! This is a subtle but important distinction in Circom related to **constraint satisfaction** and **witness generation**.
+
+## Why the First Version Works:
+
+```circom
+signal input numerator;
+signal input denominator;
+signal output out;
+signal quotient;
+component den_zerocheck = IsZero();
+den_zerocheck.in <== denominator;
+den_zerocheck.out === 0;
+quotient <-- numerator \ denominator;
+out <== quotient;
+```
+
+This works because:
+1. **The `IsZero()` component adds constraints** that indirectly constrain the relationship between inputs
+2. **The constraint `den_zerocheck.out === 0`** ensures `denominator ≠ 0`
+3. Even though `quotient` only has witness assignment (`<--`), the circuit has **enough constraints overall** to be satisfiable
+4. The `IsZero()` component creates a **constraint system** that the prover can satisfy
+
+## Why the Second Version Fails:
+
+```circom
+signal input numerator;
+signal input denominator;
+signal output out;
+signal quotient;
+quotient <-- numerator \ denominator;
+out <== quotient;
+```
+
+This fails because:
+1. **No constraints exist** relating `numerator`, `denominator`, and `quotient`
+2. `quotient <-- numerator \ denominator` only assigns a witness value
+3. `out <== quotient` creates the constraint `out === quotient`, but there's **no constraint ensuring `quotient` is the correct division result**
+4. The circuit is **underconstrained** - a malicious prover could set `quotient` to any value
+
+## The Core Issue:
+
+The "Scalar size does not match" and "Proof.json does not exist" errors occur because:
+- **Witness generation** computes `quotient = numerator / denominator`
+- **Constraint satisfaction** has no way to verify this is correct
+- The circuit fails to generate a valid proof because it can't satisfy the minimal constraints
+
+## The Fix:
+
+You need to add constraints that verify the division is correct:
+
+```circom
+signal input numerator;
+signal input denominator;
+signal output out;
+signal quotient;
+signal remainder;
+
+quotient <-- numerator \ denominator;
+remainder <-- numerator % denominator;
+
+// Add the division constraint
+numerator === quotient * denominator + remainder;
+
+// Ensure remainder < denominator
+component lt = LessThan(252);
+lt.in[0] <== remainder;
+lt.in[1] <== denominator;
+lt.out === 1;
+
+out <== quotient;
+```
+
+**Key Principle**: In Circom, every computation must be **both witnessed and constrained**. The `IsZero()` component in your first example provided additional constraints that made the circuit satisfiable, even though the division itself wasn't explicitly constrained.

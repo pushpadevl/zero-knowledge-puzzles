@@ -1,0 +1,68 @@
+Why does this works? 
+    signal input in[2];
+    signal output out;
+    out <== in[0] * in[1];. 
+But this one does compile but gives "Scalar size does not match at the end?  
+    signal input in[2];
+    signal output out; 
+    signal n2; 
+    n2 <-- in[0] * in[1];
+    out <== n2;
+
+
+The issue you're encountering is related to how Circom handles witness generation and constraint satisfaction. Let me explain the difference:
+
+## Working Code:
+```circom
+signal input in[2];
+signal output out;
+out <== in[0] * in[1];
+```
+
+This works because:
+- `<==` performs both **witness assignment** and **constraint addition**
+- It directly assigns `in[0] * in[1]` to `out` and adds the constraint `out === in[0] * in[1]`
+- The circuit knows exactly what `out` should be
+
+## Problematic Code:
+```circom
+signal input in[2];
+signal output out;
+signal n2;
+n2 <-- in[0] * in[1];
+out <== n2;
+```
+
+This has issues because:
+- `<--` only does **witness assignment** (no constraints)
+- `n2 <-- in[0] * in[1]` assigns the value but doesn't add any constraints about `n2`
+- `out <== n2` tries to assign `n2` to `out`, but since `n2` has no constraints, the circuit can't verify its correctness
+
+## The "Scalar size does not match" Error
+
+This error typically occurs when:
+1. The witness generation phase computes values differently than the constraint satisfaction phase expects
+2. There's a mismatch between computed values and constrained values
+3. Intermediate signals aren't properly constrained
+
+## How to Fix It:
+
+You need to add explicit constraints for intermediate signals:
+
+```circom
+signal input in[2];
+signal output out;
+signal n2;
+n2 <-- in[0] * in[1];  // Witness assignment
+n2 === in[0] * in[1];  // Add constraint
+out <== n2;
+```
+
+Or more simply, just use the direct approach:
+```circom
+signal input in[2];
+signal output out;
+out <== in[0] * in[1];
+```
+
+The key principle in Circom is that **every signal used in constraints must have its value properly constrained**, not just assigned as a witness.

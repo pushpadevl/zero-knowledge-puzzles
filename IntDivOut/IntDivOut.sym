@@ -1,0 +1,7 @@
+1,1,1,main.out
+2,-1,1,main.numerator
+3,2,1,main.denominator
+4,-1,1,main.quotient
+5,-1,0,main.den_zerocheck.out
+6,-1,0,main.den_zerocheck.in
+7,3,0,main.den_zerocheck.inv
