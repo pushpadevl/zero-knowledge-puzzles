@@ -6,7 +6,7 @@ if [ ! "$1" ]; then
     exit
 fi
 
-circom "$1".circom --r1cs --wasm --sym -o .
+circom "$1".circom -l "../../circomlib/" --r1cs --wasm --sym -o .
 
 PTAU=12
 
@@ -16,7 +16,6 @@ else
     echo "----- Download powersOfTau28_hez_final_${PTAU}.ptau -----"
     wget -P ./ptau https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_${PTAU}.ptau
 fi
-
 
 # Copy the input file inside the js directory
 cp input.json "$1"_js/input.json
@@ -30,19 +29,19 @@ cp witness.wtns ../witness.wtns
 cd ..
 
 # Start a new powers of tau ceremony
-snarkjs powersoftau new bn128 14 pot12_0000.ptau -v
+snarkjs powersoftau new bn128 14 pot12_0000.ptau
 
 # Contribute to the ceremony
 snarkjs powersoftau contribute pot12_0000.ptau pot12_0001.ptau --name="First contribution" -v
 
 # Start generating th phase 2
-snarkjs powersoftau prepare phase2 pot12_0001.ptau pot12_final.ptau -v
+snarkjs powersoftau prepare phase2 pot12_0001.ptau pot12_final.ptau
 
 # Generate a .zkey file that will contain the proving and verification keys together with all phase 2 contributions
 snarkjs groth16 setup "$1".r1cs pot12_final.ptau "$1"_0000.zkey
 
 # Contribute to the phase 2 of the ceremony
-snarkjs zkey contribute "$1"_0000.zkey "$1"_0001.zkey --name="$2" -v
+snarkjs zkey contribute "$1"_0000.zkey "$1"_0001.zkey --name="$2"
 
 # Export the verification key
 snarkjs zkey export verificationkey "$1"_0001.zkey verification_key.json
