@@ -21,7 +21,7 @@ fi
 cp input.json "$1"_js/input.json
 
 # Go inside the sudoku_js directory and generate the witness.wtns
-cd "$1"_js
+cd "$1"_js || exit
 node generate_witness.js "$1".wasm input.json witness.wtns
 
 # Copy the witness.wtns to the outside and go there
