@@ -8,10 +8,22 @@ pragma circom 2.1.4;
 
 // HINT:NEGATION
 
-template NotEqual() {
+template NotEqual() { 
 
-    // Your code here.
-   
+signal input in[2];
+signal output c;
+
+var res = in[0]-in[1];                          // could use XOR maybe, check
+var isNonZero=0;                                
+for(var i=0;i<254;i++){
+    isNonZero = isNonZero | (1 & (res >>i));    // OR of all bits
+}
+isNonZero ^= 1;                                 
+signal one; signal isNZ;
+one <--1; isNZ <-- isNonZero;
+c <==  one*isNZ; // with isNZ only, no non linear constraints are formed, 
+
+
 }
 
-component main = NotEqual();
+component main = NotEqual(); // bits = |_log2(n)_| + 1, check the max bits that could be used, then remove this and use that number for the loop 

@@ -5,7 +5,16 @@ pragma circom 2.1.8;
 
 template MultiplyNoOutput() {
     signal input in[3];
-
+    signal iner;
+    iner <-- in[0]*in[1] - in[2];
+    iner + in[2] === in[0]*in[1];
 }
 
-component main = MultiplyNoOutput();
+component main{public [in]} = MultiplyNoOutput();
+
+/* Works
+signal input in[3];
+signal iner;
+iner <-- in[0]*in[1] - in[2];
+iner + in[2] === in[0]*in[1];
+*/

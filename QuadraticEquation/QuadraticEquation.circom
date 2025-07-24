@@ -1,6 +1,6 @@
 pragma circom 2.1.4;
 
-include "../node_modules/circomlib/circuits/comparators.circom";
+include "../circomlib/circuits/comparators.circom";
 
 // Create a Quadratic Equation( ax^2 + bx + c ) verifier using the below data.
 // Use comparators.circom lib to compare results if equal
@@ -14,6 +14,13 @@ template QuadraticEquation() {
     signal output out;  // If res is correct , then return 1 , else 0 . 
 
     // your code here
+    var ax2 = a*x*x;
+    var bx = b*x;
+    var tot = ax2 + bx + c;
+    component eq = IsEqual();
+    eq.in[0] <-- tot;
+    eq.in[1] <-- res;
+    out <== eq.out;
 }
 
 component main  = QuadraticEquation();
